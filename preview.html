@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verse Share Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans&family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+      padding: 20px;
+      text-align: center;
+    }
+
+
+      
+      #stickyPreview {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #f3f3f3;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Wrapper to limit height */
+#previewWrapper {
+  max-height: 300px;     /* Limit to 300px, or adjust as needed */
+  overflow-y: auto;      /* Enable scroll inside */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#verseCard {
+  background: white;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+    #overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 12px;
+      z-index: 1;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f3f3f3;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #verseCard.overlay-active #overlay {
+      opacity: 1;
+    }
+     
+    #verseCard a img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 15px;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    #verseReference {
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 2;
+      color: #222;
+    }
+
+    #sharePreviewText {
+      font-size: 22px;
+      line-height: 1.5;
+      padding: 0 10px;
+      max-width: 90%;
+      word-wrap: break-word;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 2;
+      color: #000;
+      text-shadow: none;
+    }
+
+    .download-link {
+      font-size: 14px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    .buttons-container {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .customization-container {
+      margin-top: 20px;
+      padding: 10px;
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select, input[type="color"], input[type="range"], input[type="file"] {
+      margin-top: 5px;
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .align-buttons button, .toggle-buttons button {
+      margin: 3px 5px 3px 0;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      #sharePreviewText {
+        font-size: 16px;
+      }
+
+      #verseCard a img {
+        width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+
+  <div id="stickyPreview">
+  <div id="previewWrapper">
+    <div id="verseCard">
+      <img src="your-image.png" />
+      <p id="verseReference">Verse Ref</p>
+      <p id="sharePreviewText">Verse Text</p>
+      <p class="download-link"><a href="#">Download</a></p>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<div class="buttons-container">
+    <button onclick="shareImage()">📱 Share Image + Text</button>
+    <button onclick="shareViaWhatsApp()">🟢 Share on WhatsApp</button>
+    <button onclick="downloadVerseImage()">📷 Download Image</button>
+    <button onclick="saveStyles()">💾 Save Styles</button>
+    <button onclick="loadStyles()">📂 Load Styles</button>
+    <button onclick="resetStyles()">🔄 Reset Styles</button>
+</div>
+
+  <div class="customization-container">
+    <label>🎨 Choose Background:
+      <select onchange="changeVerseCardBackground(this.value)" id="backgroundSelector">
+        <option value="#ffffff">White</option>
+        <option value="#f3f3f3">Light Gray</option>
+        <option value="linear-gradient(135deg, #dfe9f3, #ffffff)">Blue Gradient</option>
+        <option value="linear-gradient(135deg, #ffe0e0, #ffffff)">Pink Gradient</option>
+        <option value="url('https://source.unsplash.com/600x400/?nature')">Nature</option>
+        <option value="url('https://source.unsplash.com/600x400/?sunset')">Sunset</option>
+      </select>
+    </label>
+
+    <label>📸 Or Upload Your Own Background:
+      <input type="file" accept="image/*" onchange="applyCustomPhoto(this)" />
+    </label>
+
+    <label>🔤 Font Family:
+      <select onchange="changeFontFamily(this.value)" id="fontFamilySelector">
+        <option value="serif">Serif</option>
+        <option value="sans-serif" selected>Sans Serif</option>
+        <option value="cursive">Cursive</option>
+        <option value="monospace">Monospace</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+        <option value="'Open Sans', sans-serif">Open Sans</option>
+        <option value="'Lobster', cursive">Lobster</option>
+      </select>
+    </label>
+
+    <label>🔎 Font Size:
+      <input type="range" min="14" max="48" value="22" oninput="changeFontSize(this.value)" id="fontSizeRange" />
+      <span id="fontSizeValue">22px</span>
+    </label>
+
+    <label>📝 Text Color:
+      <input type="color" value="#000000" onchange="changeTextColor(this.value)" id="textColorPicker" />
+    </label>
+
+    <label>↔️ Text Alignment:</label>
+    <div class="align-buttons">
+      <button onclick="changeTextAlign('left')">Left</button>
+      <button onclick="changeTextAlign('center')">Center</button>
+      <button onclick="changeTextAlign('right')">Right</button>
+    </div>
+
+    <label>↕️ Line Height:
+      <input type="range" min="1" max="3" step="0.1" value="1.5" oninput="changeLineHeight(this.value)" id="lineHeightRange" />
+      <span id="lineHeightValue">1.5</span>
+    </label>
+
+    <label>🖤 Text Shadow:</label>
+    <div class="toggle-buttons">
+      <button onclick="toggleTextShadow(true)">On</button>
+      <button onclick="toggleTextShadow(false)">Off</button>
+    </div>
+
+    <label>📐 Padding (px):
+      <input type="range" min="0" max="50" value="20" oninput="changePadding(this.value)" id="paddingRange" />
+      <span id="paddingValue">20px</span>
+    </label>
+
+    <label>🌗 Background Overlay (for photo backgrounds):</label>
+    <div class="toggle-buttons">
+      <button onclick="toggleOverlay(true)">On</button>
+      <button onclick="toggleOverlay(false)">Off</button>
+    </div>
+  </div>
+
+  <script>
+
+  // ⬇️ SHARE IMAGE + TEXT USING Web Share API (Android/iOS)
+  async function shareImage() {
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get("data");
+    if (!data) {
+      alert("⚠️ No verse data to share.");
+      return;
+    }
+
+    try {
+      const previewData = JSON.parse(decodeURIComponent(data));
+      const { reference, text } = previewData;
+      const shareText = `📖 ${reference}\n\n${text}\n\n📥 Download the app:\nhttps://bit.ly/4nwxo0l`;
+
+      const card = document.getElementById("verseCard");
+      const canvas = await html2canvas(card);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], "verse.png", { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: "📖 Bible Verse",
+          text: shareText,
+          files: [file]
+        });
+      } else {
+        alert("⚠️ Your device doesn't support direct image sharing.\nPlease tap '📷 Download Image' and share manually.");
+      }
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("❌ Could not share the verse.");
+    }
+  }
+
+  // ⬇️ SHARE TEXT ONLY TO WHATSAPP (ALWAYS SUPPORTED)
+  function shareViaWhatsApp() {
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get("data");
+
+    if (!data) {
+      alert("⚠️ No verse found to share.");
+      return;
+    }
+
+    try {
+      const previewData = JSON.parse(decodeURIComponent(data));
+      const { reference, text } = previewData;
+
+      const message = `📖 ${reference}\n\n${text}\n\n📥 Download the app:\nhttps://bit.ly/4nwxo0l`;
+      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(url, "_blank");
+    } catch (e) {
+      alert("⚠️ Could not format the message for WhatsApp.");
+    }
+  }
+
+  // ⬇️ DOWNLOAD IMAGE ONLY
+  function downloadVerseImage() {
+    const card = document.getElementById("verseCard");
+    html2canvas(card).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "verse.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  }
+
+
+    const card = document.getElementById('verseCard');
+    const verseText = document.getElementById('sharePreviewText');
+    const overlay = document.getElementById('overlay');
+
+    // Load verse from URL param ?data=
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const data = params.get("data");
+      const refEl = document.getElementById("verseReference");
+
+      if (data) {
+        try {
+          const previewData = JSON.parse(decodeURIComponent(data));
+          refEl.innerText = previewData.reference;
+          verseText.innerText = previewData.text;
+        } catch (e) {
+          refEl.innerText = "⚠️ Error loading verse";
+          verseText.innerText = "";
+        }
+      } else {
+        refEl.innerText = "No verse data found.";
+        verseText.innerText = "";
+      }
+
+      loadStyles(); // try to load saved styles on start
+    });
+
+
+   
+
+   
+
+    // Change background (color, gradient, or image url)
+    function changeVerseCardBackground(value) {
+      if (value.startsWith("url(") || value.includes("gradient")) {
+        card.style.backgroundImage = value;
+        card.style.backgroundColor = "";
+        card.style.backgroundSize = "cover";
+        card.style.backgroundPosition = "center";
+      } else {
+        card.style.backgroundImage = "";
+        card.style.backgroundColor = value;
+      }
+      saveStyles(); // auto save on change
+    }
+
+    // Upload custom photo background
+    function applyCustomPhoto(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        card.style.backgroundImage = `url('${e.target.result}')`;
+        card.style.backgroundColor = "";
+        card.style.backgroundSize = "cover";
+        card.style.backgroundPosition = "center";
+        // Reset dropdown selection
+        document.getElementById('backgroundSelector').value = "";
+        saveStyles();
+      }
+      reader.readAsDataURL(file);
+    }
+
+    // Font family change
+    function changeFontFamily(font) {
+      verseText.style.fontFamily = font;
+      saveStyles();
+    }
+
+    // Font size change
+    function changeFontSize(size) {
+      verseText.style.fontSize = size + 'px';
+      document.getElementById('fontSizeValue').innerText = size + 'px';
+      saveStyles();
+    }
+
+    // Text color change
+    function changeTextColor(color) {
+      verseText.style.color = color;
+      saveStyles();
+    }
+
+    // Text alignment change
+    function changeTextAlign(align) {
+      verseText.style.textAlign = align;
+      saveStyles();
+    }
+
+    // Line height change
+    function changeLineHeight(value) {
+      verseText.style.lineHeight = value;
+      document.getElementById('lineHeightValue').innerText = value;
+      saveStyles();
+    }
+
+    // Text shadow toggle
+    function toggleTextShadow(on) {
+      if (on) {
+        verseText.style.textShadow = "2px 2px 4px rgba(0,0,0,0.5)";
+      } else {
+        verseText.style.textShadow = "none";
+      }
+      saveStyles();
+    }
+
+    // Padding change
+    function changePadding(px) {
+      card.style.padding = px + 'px';
+      document.getElementById('paddingValue').innerText = px + 'px';
+      saveStyles();
+    }
+
+    // Background overlay toggle
+    function toggleOverlay(on) {
+      if (on) {
+        card.classList.add('overlay-active');
+      } else {
+        card.classList.remove('overlay-active');
+      }
+      saveStyles();
+    }
+
+    // Save styles to localStorage
+    function saveStyles() {
+      const styles = {
+        backgroundColor: card.style.backgroundColor || "",
+        backgroundImage: card.style.backgroundImage || "",
+        fontFamily: verseText.style.fontFamily || "",
+        fontSize: verseText.style.fontSize || "",
+        color: verseText.style.color || "",
+        textAlign: verseText.style.textAlign || "",
+        lineHeight: verseText.style.lineHeight || "",
+        textShadow: verseText.style.textShadow || "",
+        padding: card.style.padding || "",
+        overlayActive: card.classList.contains('overlay-active')
+      };
+      localStorage.setItem('verseStyles', JSON.stringify(styles));
+    }
+
+    // Load styles from localStorage
+    function loadStyles() {
+      const saved = localStorage.getItem('verseStyles');
+      if (!saved) return;
+
+      try {
+        const styles = JSON.parse(saved);
+
+        // Background
+        if (styles.backgroundImage) {
+          card.style.backgroundImage = styles.backgroundImage;
+          card.style.backgroundColor = "";
+          document.getElementById('backgroundSelector').value = "";
+        } else if (styles.backgroundColor) {
+          card.style.backgroundImage = "";
+          card.style.backgroundColor = styles.backgroundColor;
+          document.getElementById('backgroundSelector').value = styles.backgroundColor;
+        }
+
+        // Font family
+        if (styles.fontFamily) {
+          verseText.style.fontFamily = styles.fontFamily;
+          document.getElementById('fontFamilySelector').value = styles.fontFamily;
+        }
+
+        // Font size
+        if (styles.fontSize) {
+          verseText.style.e = styles.fontSize;
+          document.getElementById('fontSizeRange').value = parseInt(styles.fontSize);
+          document.getElementById('fontSizeValue').innerText = styles.fontSize;
+        }
+
+        // Color
+        if (styles.color) {
+          verseText.style.color = styles.color;
+          document.getElementById('textColorPicker').value = styles.color;
+        }
+
+        // Text align
+        if (styles.textAlign) {
+          verseText.style.textAlign = styles.textAlign;
+        }
+
+        // Line height
+        if (styles.lineHeight) {
+          verseText.style.lineHeight = styles.lineHeight;
+          document.getElementById('lineHeightRange').value = parseFloat(styles.lineHeight);
+          document.getElementById('lineHeightValue').innerText = styles.lineHeight;
+        }
+
+        // Text shadow
+        if (styles.textShadow && styles.textShadow !== "none") {
+          verseText.style.textShadow = styles.textShadow;
+        } else {
+          verseText.style.textShadow = "none";
+        }
+
+        // Padding
+        if (styles.padding) {
+          card.style.padding = styles.padding;
+          document.getElementById('paddingRange').value = parseInt(styles.padding);
+          document.getElementById('paddingValue').innerText = styles.padding;
+        }
+
+        // Overlay
+        if (styles.overlayActive) {
+          card.classList.add('overlay-active');
+        } else {
+          card.classList.remove('overlay-active');
+        }
+
+      } catch(e) {
+        console.error('Failed to load styles', e);
+      }
+    }
+
+    // Reset styles to defaults
+    function resetStyles() {
+      localStorage.removeItem('verseStyles');
+      // Reset inputs to defaults
+      document.getElementById('backgroundSelector').value = "#ffffff";
+      document.getElementById('fontFamilySelector').value = "sans-serif";
+      document.getElementById('fontSizeRange').value = 22;
+      document.getElementById('fontSizeValue').innerText = "22px";
+      document.getElementById('textColorPicker').value = "#000000";
+      document.getElementById('lineHeightRange').value = 1.5;
+      document.getElementById('lineHeightValue').innerText = "1.5";
+      document.getElementById('paddingRange').value = 20;
+      document.getElementById('paddingValue').innerText = "20px";
+
+      verseText.style.fontFamily = "sans-serif";
+      verseText.style.fontSize = "22px";
+      verseText.style.color = "#000000";
+      verseText.style.textAlign = "center";
+      verseText.style.lineHeight = "1.5";
+      verseText.style.textShadow = "none";
+      card.style.backgroundColor = "#ffffff";
+      card.style.backgroundImage = "";
+      card.style.padding = "20px";
+      card.classList.remove('overlay-active');
+      saveStyles();
+    }
+  </script>
+  
+<script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.0/dist/panzoom.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const panzoom = Panzoom(document.getElementById("verseCard"), {
+      maxScale: 2,
+      minScale: 1,
+      contain: 'outside'
+    });
+
+    document.getElementById("previewWrapper").addEventListener("wheel", panzoom.zoomWithWheel);
+  });
+</script>
+
+
+</body>
+</html>
