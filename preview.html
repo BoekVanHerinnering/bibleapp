@@ -512,7 +512,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-    const refMatch = reference.match(/^(\w+)\s+(\d+:\d+)$/);
+const refMatch = reference.match(/^([a-zA-Z0-9_]+)\s+(\d+:\d+)$/);
 if (refMatch) {
   const bookKey = refMatch[1];
   const chapterVerse = refMatch[2];
@@ -521,6 +521,7 @@ if (refMatch) {
 } else {
   document.getElementById("verseReference").textContent = reference || "";
 }
+
 
     document.getElementById("sharePreviewText").textContent = text || "";
   } catch (err) {
