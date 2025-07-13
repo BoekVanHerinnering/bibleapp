@@ -374,7 +374,7 @@ function cloneAndRenderCard(callback) {
       const verseRef = document.getElementById('verseReference').textContent;
       const verseText = document.getElementById('sharePreviewText').textContent;
 
-      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttps://boekvanherinnering.github.io`;
+      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttp://bit.ly/3Ioq7j6`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -401,7 +401,7 @@ function cloneAndRenderCard(callback) {
     function shareToWhatsApp() {
   const verseRef = document.getElementById('verseReference').textContent;
   const verseText = document.getElementById('sharePreviewText').textContent;
-  const message = `📖 ${verseRef}\n${verseText}\n\n📥 Download the Bible App:\nhttps://boekvanherinnering.github.io`;
+  const message = `📖 ${verseRef}\n${verseText}\n\n📥 Download the Bible App:\nhttp://bit.ly/3Ioq7j6`;
 
   const encoded = encodeURIComponent(message);
   window.open(`https://wa.me/?text=${encoded}`, "_blank");
