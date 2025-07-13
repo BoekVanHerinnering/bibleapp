@@ -440,7 +440,33 @@ window.addEventListener("DOMContentLoaded", () => {
 
   try {
     const { reference, text } = JSON.parse(decodeURIComponent(dataParam));
-    document.getElementById("verseReference").textContent = reference || "";
+
+    const bookNameMap = {
+  een_konings: "1 Konings",
+  twee_konings: "2 Konings",
+  een_kronieke: "1 Kronieke",
+  twee_kronieke: "2 Kronieke",
+  een_shemuel: "1 Samuel",
+  twee_shemuel: "2 Samuel",
+  genesis: "Genesis",
+  exodus: "Exodus",
+  levitikus: "Levitikus",
+  numeri: "Numeri",
+  deuteronomium: "Deuteronomium"
+  // you can add more book mappings later if needed
+};
+
+
+    const refMatch = reference.match(/^(\w+)\s+(\d+:\d+)$/);
+if (refMatch) {
+  const bookKey = refMatch[1];
+  const chapterVerse = refMatch[2];
+  const displayName = bookNameMap[bookKey] || bookKey;
+  document.getElementById("verseReference").textContent = `${displayName} ${chapterVerse}`;
+} else {
+  document.getElementById("verseReference").textContent = reference || "";
+}
+
     document.getElementById("sharePreviewText").textContent = text || "";
   } catch (err) {
     console.error("Failed to parse preview data:", err);
