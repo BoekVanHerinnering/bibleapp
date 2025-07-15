@@ -95,6 +95,7 @@
 </head>
 <body>
 
+
   <!-- Verse Card -->
   <div id="verseCard">
     <div id="bgLayer"></div>
@@ -190,6 +191,36 @@
   </div>
 
   <script>
+
+    window.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get("data");
+
+    if (data) {
+      try {
+        const previewData = JSON.parse(decodeURIComponent(data));
+        const text = previewData.text || "";
+        const reference = previewData.reference || "";
+
+        // ✅ Replace this with your real HTML elements
+        document.getElementById("previewText").innerText = text;
+        document.getElementById("referenceTitle").innerText = reference;
+
+      } catch (err) {
+        console.error("Error decoding preview data:", err);
+      }
+    } else {
+      console.warn("No verse data found in URL.");
+    }
+  });
+
+
+
+
+
+
+
+
     function updateTransform() {
   const cardHeight = document.getElementById('verseCard').offsetHeight;
   bgLayer.style.height = cardHeight + 'px';
