@@ -110,6 +110,8 @@
 
   <!-- Buttons -->
   <div class="controls">
+    <button onclick="shareImageAndText()">📲 Share Image + Text to WhatsApp</button>
+
     <button onclick="shareVerse()">📤 Share Verse & image</button>
     <button onclick="downloadVerseImage()">📅 Verse & image</button>
     <button onclick="shareToWhatsApp()">📲 Share Verse only to WhatsApp</button>
@@ -478,6 +480,31 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+async function shareImageAndText() {
+  cloneAndRenderCard(async canvas => {
+    canvas.toBlob(async blob => {
+      const file = new File([blob], "verse.png", { type: "image/png" });
+
+      const verseRef = document.getElementById('verseReference').textContent;
+      const verseText = document.getElementById('sharePreviewText').textContent;
+
+      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttp://bit.ly/3Ioq7j6`;
+
+      if (navigator.canShare && navigator.canShare({ files: [file], text: message })) {
+        await navigator.share({
+          title: 'Bible Verse',
+          text: message,
+          files: [file]
+        });
+      } else {
+        alert("❗Your device/browser doesn't support sharing both image and text via WhatsApp. You can try separately.");
+        // Optionally fallback to WhatsApp text-only share:
+        const encoded = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encoded}`, "_blank");
+      }
+    });
+  });
+}
 
   </script>
 
