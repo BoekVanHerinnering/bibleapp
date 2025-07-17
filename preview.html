@@ -90,14 +90,8 @@
       padding: 5px;
       box-sizing: border-box;
     }
-
-    
-
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
 </head>
 <body>
 
@@ -110,17 +104,6 @@
   <div id="verseReference"></div>
   <div id="sharePreviewText"></div>
   <div id="shareAppLink">📥 Download:http://bit.ly/3Ioq7j6</div>
-  <div style="position: absolute;">
-  <canvas id="qrCodeCanvas" width="80" height="80" style="
-    background: white;
-    padding: 4px;
-    border-radius: 8px;">
-  </canvas>
-</div>
-
-
-</div>
-
 </div>
 
   </div>
@@ -494,41 +477,6 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Failed to parse preview data:", err);
   }
 });
-
-window.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const dataParam = params.get("data");
-  if (dataParam) {
-    try {
-      const { reference, text } = JSON.parse(decodeURIComponent(dataParam));
-      document.getElementById("verseReference").textContent = reference || "";
-      document.getElementById("sharePreviewText").textContent = text || "";
-    } catch (err) {
-      console.error("Failed to parse preview data:", err);
-    }
-  }
-
-  // ✅ Generate the QR code here
-  const canvas = document.getElementById("qrCodeCanvas");
-  if (canvas) {
-    QRCode.toCanvas(canvas, "https://bit.ly/3Ioq7j6", {
-      width: 72,
-      margin: 0,
-      color: {
-        dark: "#000000",
-        light: "#ffffff"
-      }
-    }, function (error) {
-      if (error) {
-        console.error("❌ QR Code generation failed:", error);
-      } else {
-        console.log("✅ QR Code generated successfully");
-      }
-    });
-  }
-});
-
-
 
 
   </script>
