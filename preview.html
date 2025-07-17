@@ -92,6 +92,8 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
 </head>
 <body>
 
@@ -104,6 +106,8 @@
   <div id="verseReference"></div>
   <div id="sharePreviewText"></div>
   <div id="shareAppLink">📥 Download:http://bit.ly/3Ioq7j6</div>
+  <div id="qrCodeContainer" style="position:absolute; bottom:10px; right:10px;"></div>
+
 </div>
 
   </div>
@@ -398,54 +402,36 @@ function cloneAndRenderCard(callback) {
     }
 
     async function shareVerse() {
-  const previewCard = document.querySelector(".verse-card");
-  if (!previewCard) {
-    alert("No verse found.");
-    return;
-  }
+  cloneAndRenderCard(async canvas => {
+    canvas.toBlob(async blob => {
+      const file = new File([blob], "verse.png", { type: "image/png" });
 
-  // Clone and prepare card for image
-  const clone = previewCard.cloneNode(true);
-  clone.style.position = "fixed";
-  clone.style.left = "-9999px";
-  document.body.appendChild(clone);
+      const verseRef = document.getElementById('verseReference').textContent;
+      const verseText = document.getElementById('sharePreviewText').textContent;
 
-  // Wait a tick to apply styles
-  await new Promise(r => setTimeout(r, 100));
+      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttp://bit.ly/3Ioq7j6`;
 
-  // Generate image
-  const canvas = await html2canvas(clone, { scale: 2 });
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-  document.body.removeChild(clone);
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Bible Verse',
+          text: message,
+          files: [file]
+        });
+      } else {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = "verse.png";
+        downloadLink.click();
 
-  if (!blob) {
-    alert("Failed to create image.");
-    return;
-  }
-
-  const file = new File([blob], "verse.png", { type: "image/png" });
-
-  const verseRef = document.getElementById("verseReference")?.innerText || "";
-  const verseText = document.getElementById("verseText")?.innerText || "";
-  const message = `📖 *${verseRef}*\n${verseText}\n\n📥 Download the Bible App:\nhttp://bit.ly/3Ioq7j6`;
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        text: message,
-        title: "Bible Verse"
-      });
-    } catch (err) {
-      console.error("Share failed:", err);
-      alert("Share canceled or failed.");
-    }
-  } else {
-    alert("Sharing not supported on this device.");
-  }
+        navigator.clipboard.writeText(message).then(() => {
+          alert("✅ Image saved. App link copied to clipboard:\n" + message);
+        }).catch(() => {
+          alert("✅ Image saved.\n⚠️ Please copy this link:\n" + message);
+        });
+      }
+    });
+  });
 }
-
-
 
     function shareToWhatsApp() {
   const verseRef = document.getElementById('verseReference').textContent;
@@ -493,6 +479,20 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("sharePreviewText").textContent = text || "";
   } catch (err) {
     console.error("Failed to parse preview data:", err);
+  }
+});
+
+window.addEventListener("load", () => {
+  const container = document.getElementById("qrCodeContainer");
+  if (container) {
+    QRCode.toCanvas(container, "https://bit.ly/3Ioq7j6", {
+      width: 80,
+      margin: 1,
+      color: {
+        dark: "#000000",
+        light: "#ffffff"
+      }
+    });
   }
 });
 
