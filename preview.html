@@ -428,7 +428,7 @@ function cloneAndRenderCard(callback) {
       });
     }
 
-    async function shareVerse() {
+  async function shareVerse() {
   cloneAndRenderCard(async canvas => {
     canvas.toBlob(async blob => {
       const file = new File([blob], "verse.png", { type: "image/png" });
@@ -436,29 +436,32 @@ function cloneAndRenderCard(callback) {
       const verseRef = document.getElementById('verseReference').textContent;
       const verseText = document.getElementById('sharePreviewText').textContent;
 
-      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttp://bit.ly/3Ioq7j6`;
+      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 Download the Bible App:\nhttp://bit.ly/3Ioq7j6`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'Bible Verse',
-          text: message,
-          files: [file]
+          title: 'Verse Share',
+          text: message, // ← Link appears below image
+          files: [file],
         });
       } else {
+        // fallback for unsupported browsers
         const downloadLink = document.createElement("a");
         downloadLink.href = URL.createObjectURL(blob);
         downloadLink.download = "verse.png";
         downloadLink.click();
 
+        // copy the text with the link
         navigator.clipboard.writeText(message).then(() => {
-          alert("✅ Image saved. App link copied to clipboard:\n" + message);
+          alert("✅ Image saved. Link copied to clipboard:\n" + message);
         }).catch(() => {
           alert("✅ Image saved.\n⚠️ Please copy this link:\n" + message);
         });
       }
-    });
+    }, "image/png");
   });
 }
+
 
     function shareToWhatsApp() {
   const verseRef = document.getElementById('verseReference').textContent;
