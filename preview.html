@@ -111,7 +111,7 @@
   <!-- Buttons -->
   <div class="controls">
     <button onclick="shareVerse()">📤 Share Verse & image</button>
-    <button onclick="downloadVerseImage()">📅 Verse & image</button>
+    <button onclick="downloadVerseImage()">📅 Download Verse & image</button>
     <button onclick="shareToWhatsApp()">📲 Share Verse only to WhatsApp</button>
     <button onclick="resetVerseCard()">♻️ Reset All</button>
   </div>
@@ -217,37 +217,6 @@
 
 
 
-async function shareVerse() {
-  cloneAndRenderCard(async canvas => {
-    canvas.toBlob(async blob => {
-      const file = new File([blob], "verse.png", { type: "image/png" });
-
-      const verseRef = document.getElementById('verseReference').textContent;
-      const verseText = document.getElementById('sharePreviewText').textContent;
-
-      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 *Download the Bible App:*\nhttp://bit.ly/3Ioq7j6`;
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Bible Verse',
-          text: message, // ← Includes your tappable link
-          files: [file]
-        });
-      } else {
-        const downloadLink = document.createElement("a");
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = "verse.png";
-        downloadLink.click();
-
-        navigator.clipboard.writeText(message).then(() => {
-          alert("✅ Image saved. App link copied to clipboard:\n" + message);
-        }).catch(() => {
-          alert("✅ Image saved.\n⚠️ Please copy this link:\n" + message);
-        });
-      }
-    });
-  });
-}
 
 
 
@@ -428,39 +397,54 @@ function cloneAndRenderCard(callback) {
       });
     }
 
-  async function shareVerse() {
-  cloneAndRenderCard(async canvas => {
-    canvas.toBlob(async blob => {
-      const file = new File([blob], "verse.png", { type: "image/png" });
+    async function shareVerse() {
+  const previewCard = document.querySelector(".verse-card");
+  if (!previewCard) {
+    alert("No verse found.");
+    return;
+  }
 
-      const verseRef = document.getElementById('verseReference').textContent;
-      const verseText = document.getElementById('sharePreviewText').textContent;
+  // Clone and prepare card for image
+  const clone = previewCard.cloneNode(true);
+  clone.style.position = "fixed";
+  clone.style.left = "-9999px";
+  document.body.appendChild(clone);
 
-      const message = `📖 *${verseRef}*\n${verseText}\n\n📥 Download the Bible App:\nhttp://bit.ly/3Ioq7j6`;
+  // Wait a tick to apply styles
+  await new Promise(r => setTimeout(r, 100));
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Verse Share',
-          text: message, // ← Link appears below image
-          files: [file],
-        });
-      } else {
-        // fallback for unsupported browsers
-        const downloadLink = document.createElement("a");
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = "verse.png";
-        downloadLink.click();
+  // Generate image
+  const canvas = await html2canvas(clone, { scale: 2 });
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+  document.body.removeChild(clone);
 
-        // copy the text with the link
-        navigator.clipboard.writeText(message).then(() => {
-          alert("✅ Image saved. Link copied to clipboard:\n" + message);
-        }).catch(() => {
-          alert("✅ Image saved.\n⚠️ Please copy this link:\n" + message);
-        });
-      }
-    }, "image/png");
-  });
+  if (!blob) {
+    alert("Failed to create image.");
+    return;
+  }
+
+  const file = new File([blob], "verse.png", { type: "image/png" });
+
+  const verseRef = document.getElementById("verseReference")?.innerText || "";
+  const verseText = document.getElementById("verseText")?.innerText || "";
+  const message = `📖 *${verseRef}*\n${verseText}\n\n📥 Download the Bible App:\nhttp://bit.ly/3Ioq7j6`;
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        text: message,
+        title: "Bible Verse"
+      });
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("Share canceled or failed.");
+    }
+  } else {
+    alert("Sharing not supported on this device.");
+  }
 }
+
 
 
     function shareToWhatsApp() {
@@ -511,7 +495,6 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Failed to parse preview data:", err);
   }
 });
-
 
 
   </script>
